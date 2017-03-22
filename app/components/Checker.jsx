@@ -7,7 +7,8 @@ var Button              = require("Button");
 var TescoApi            = require("TescoApi");
 
 
-function containsObject(obj, list) {
+var Checker = React.createClass({
+    containsObject: function(obj, list) {
             var i;
             for (i = 0; i < list.length; i++) {
                 if (list[i] === obj) {
@@ -16,9 +17,7 @@ function containsObject(obj, list) {
             }
         
             return false;
-        }
-
-var Checker = React.createClass({
+        },
     getInitialState: function(){
         return{
             message: 'use the search bar to look up an item',
@@ -51,38 +50,65 @@ var Checker = React.createClass({
     handleAddList: function(item) {
         var that = this;
         
-        var list = this.state.list;
+        var {data, list} = this.state;
         
-        if( typeof item.quantity != 'number' ){
-            item.quantity = 1;
-        }
+        if( this.containsObject(item, data)){
+            that.setState({
+                message: "you have one already!"
+            })
+        }else{
+            if( typeof item.list != 'number' ){
+                item.list = 1;
+            }
     
         
-        if( !containsObject(item, list)){
-            list.push(item);
-        
-            that.setState({
-                list,
-                message: "You added " + item.name + " to the fridge"
-            })
+            if( !this.containsObject(item, list)){
+                list.push(item);
             
-        }else{
-            item.quantity++;
-            that.setState(({
-                list,
-                message: "You added another " + item.name + " in the fridge!"
-            }))
+                that.setState({
+                    list,
+                    message: "You added " + item.name + " to your shopping list!"
+                })
+                
+            }else{
+                item.list++;
+                that.setState(({
+                    list,
+                    message: "You added another " + item.name + " to your shopping list!"
+                }))
+            }
         }
         
     },
     handleCheckout: function(item){
       var that = this;
         
-      var list = this.state.list;
+      var {list, data} = this.state;
       var index = list.indexOf(item);
-      var data = this.state.data;
       
-      data.push(item);
+      if( typeof item.fridge != 'number' ){
+            item.fridge = 0;
+        }
+      
+      if( !this.containsObject(item, data)){
+            data.push(item);
+        
+            that.setState({
+                data,
+                message: "You added " + item.name + " to the fridge!"
+            })
+            
+        }else{
+            
+            that.setState(({
+                data,
+                message: "You added another " + item.name + " in the fridge!"
+            }))
+        }
+        
+        item.fridge = item.fridge + item.list;
+        item.list = 1;
+      
       
         if (index > -1) {
           list.splice(index, 1);
@@ -93,6 +119,40 @@ var Checker = React.createClass({
           list
       })
     },
+    handleIncrease: function(item, list){
+        var that = this;
+        
+        item.list++;
+        
+        var {data, list} = this.state;
+        
+        that.setState({
+            list,
+            data
+        })
+        
+    },
+    handleDecrease: function(item){
+        var that = this;
+        
+        var {data, list} = this.state;
+        
+        var index = list.indexOf(item);
+        
+        if(item.list > 1){
+            item.list--;
+        }else{
+            if (index > -1) {
+              list.splice(index, 1);
+            }
+            item.list == 0;
+        }
+    
+        that.setState({
+            list,
+            data
+        })
+    },
     render: function () {
 
         var {message, data, results, list} = this.state;
@@ -101,52 +161,12 @@ var Checker = React.createClass({
             <div>
                 <CheckerMessage message={message}/>
                 <CheckerForm onSearch={this.handleSearch} />
-                <CheckerResults handleButton={this.handleAddList} results={results} button="Add this item" heading="Results" />
-                <CheckerResults handleButton={this.handleCheckout} results={list} button="Checkout Item" heading="List" />
-                <CheckerResults handleButton={this.handleAddList} results={data} button="Remove" heading="Fridge" />
+                <CheckerResults handleButton={this.handleAddList} results={results} quantity="" button="Add this item" heading="Results" />
+                <CheckerResults handleIncrease={this.handleIncrease} handleDecrease={this.handleDecrease} handleButton={this.handleCheckout} results={list} quantity="list" button="Checkout Item" heading="List" />
+                <CheckerResults handleIncrease={this.handleIncrease} handleDecrease={this.handleDecrease} handleButton={this.handleAddList} results={data} quantity="fridge" button="Remove" heading="Fridge" />
             </div>
         );
     }
 }); 
 
 module.exports = Checker;
-
-
-        // var that = this;
-        
-        // if( items.hasOwnProperty(item) ){
-        //     that.setState({
-        //         item: item,
-        //         message: "Looks like we have that!",
-        //         quantity: "we have " + items[item] + " of those",
-        //         extra: true
-        //     })
-        // }else{
-        //     that.setState({
-        //         item: item,
-        //         message: "Doesn't look like we have any of those",
-        //         quantity: '',
-        //         extra: true
-        //     })
-        // };
-
-
-        // var button = null;
-        // var add = null;
-        
-        // if(extra){
-        //             button =    <div>
-        //                             <p>Do you want to add this?</p>
-        //                             <Button add={this.handleAdd}/>
-        //                         </div>
-        //         }else{
-        //             button = <div></div>
-        //         }
-                
-        //         if(add){
-        //             add =    <div>
-        //                             <p>hello</p>
-        //                         </div>
-        //         }else{
-        //             add = <div></div>
-        //         }

@@ -25463,26 +25463,25 @@
 
 	var React = __webpack_require__(1);
 	var CheckerCamera = __webpack_require__(225);
-	var CheckerMessage = __webpack_require__(254);
-	var CheckerForm = __webpack_require__(255);
-	var CheckerResults = __webpack_require__(256);
-	var Button = __webpack_require__(258);
-	var TescoApi = __webpack_require__(228);
-
-	function containsObject(obj, list) {
-	    var i;
-	    for (i = 0; i < list.length; i++) {
-	        if (list[i] === obj) {
-	            return true;
-	        }
-	    }
-
-	    return false;
-	}
+	var CheckerMessage = __webpack_require__(227);
+	var CheckerForm = __webpack_require__(228);
+	var CheckerResults = __webpack_require__(229);
+	var Button = __webpack_require__(231);
+	var TescoApi = __webpack_require__(232);
 
 	var Checker = React.createClass({
 	    displayName: "Checker",
 
+	    containsObject: function containsObject(obj, list) {
+	        var i;
+	        for (i = 0; i < list.length; i++) {
+	            if (list[i] === obj) {
+	                return true;
+	            }
+	        }
+
+	        return false;
+	    },
 	    getInitialState: function getInitialState() {
 	        return {
 	            message: 'use the search bar to look up an item',
@@ -25509,35 +25508,66 @@
 	    handleAddList: function handleAddList(item) {
 	        var that = this;
 
-	        var list = this.state.list;
+	        var _state = this.state,
+	            data = _state.data,
+	            list = _state.list;
 
-	        if (typeof item.quantity != 'number') {
-	            item.quantity = 1;
-	        }
 
-	        if (!containsObject(item, list)) {
-	            list.push(item);
-
+	        if (this.containsObject(item, data)) {
 	            that.setState({
-	                list: list,
-	                message: "You added " + item.name + " to the fridge"
+	                message: "you have one already!"
 	            });
 	        } else {
-	            item.quantity++;
-	            that.setState({
-	                list: list,
-	                message: "You added another " + item.name + " in the fridge!"
-	            });
+	            if (typeof item.list != 'number') {
+	                item.list = 1;
+	            }
+
+	            if (!this.containsObject(item, list)) {
+	                list.push(item);
+
+	                that.setState({
+	                    list: list,
+	                    message: "You added " + item.name + " to your shopping list!"
+	                });
+	            } else {
+	                item.list++;
+	                that.setState({
+	                    list: list,
+	                    message: "You added another " + item.name + " to your shopping list!"
+	                });
+	            }
 	        }
 	    },
 	    handleCheckout: function handleCheckout(item) {
 	        var that = this;
 
-	        var list = this.state.list;
-	        var index = list.indexOf(item);
-	        var data = this.state.data;
+	        var _state2 = this.state,
+	            list = _state2.list,
+	            data = _state2.data;
 
-	        data.push(item);
+	        var index = list.indexOf(item);
+
+	        if (typeof item.fridge != 'number') {
+	            item.fridge = 0;
+	        }
+
+	        if (!this.containsObject(item, data)) {
+	            data.push(item);
+
+	            that.setState({
+	                data: data,
+	                message: "You added " + item.name + " to the fridge!"
+	            });
+	        } else {
+
+	            that.setState({
+	                data: data,
+	                message: "You added another " + item.name + " in the fridge!"
+	            });
+	        }
+
+	        item.fridge = item.fridge + item.list;
+	        item.list = 1;
 
 	        if (index > -1) {
 	            list.splice(index, 1);
@@ -25548,12 +25578,51 @@
 	            list: list
 	        });
 	    },
+	    handleIncrease: function handleIncrease(item, list) {
+	        var that = this;
+
+	        item.list++;
+
+	        var _state3 = this.state,
+	            data = _state3.data,
+	            list = _state3.list;
+
+
+	        that.setState({
+	            list: list,
+	            data: data
+	        });
+	    },
+	    handleDecrease: function handleDecrease(item) {
+	        var that = this;
+
+	        var _state4 = this.state,
+	            data = _state4.data,
+	            list = _state4.list;
+
+
+	        var index = list.indexOf(item);
+
+	        if (item.list > 1) {
+	            item.list--;
+	        } else {
+	            if (index > -1) {
+	                list.splice(index, 1);
+	            }
+	            item.list == 0;
+	        }
+
+	        that.setState({
+	            list: list,
+	            data: data
+	        });
+	    },
 	    render: function render() {
-	        var _state = this.state,
-	            message = _state.message,
-	            data = _state.data,
-	            results = _state.results,
-	            list = _state.list;
+	        var _state5 = this.state,
+	            message = _state5.message,
+	            data = _state5.data,
+	            results = _state5.results,
+	            list = _state5.list;
 
 
 	        return React.createElement(
@@ -25561,53 +25630,14 @@
 	            null,
 	            React.createElement(CheckerMessage, { message: message }),
 	            React.createElement(CheckerForm, { onSearch: this.handleSearch }),
-	            React.createElement(CheckerResults, { handleButton: this.handleAddList, results: results, button: "Add this item", heading: "Results" }),
-	            React.createElement(CheckerResults, { handleButton: this.handleCheckout, results: list, button: "Checkout Item", heading: "List" }),
-	            React.createElement(CheckerResults, { handleButton: this.handleAddList, results: data, button: "Remove", heading: "Fridge" })
+	            React.createElement(CheckerResults, { handleButton: this.handleAddList, results: results, quantity: "", button: "Add this item", heading: "Results" }),
+	            React.createElement(CheckerResults, { handleIncrease: this.handleIncrease, handleDecrease: this.handleDecrease, handleButton: this.handleCheckout, results: list, quantity: "list", button: "Checkout Item", heading: "List" }),
+	            React.createElement(CheckerResults, { handleIncrease: this.handleIncrease, handleDecrease: this.handleDecrease, handleButton: this.handleAddList, results: data, quantity: "fridge", button: "Remove", heading: "Fridge" })
 	        );
 	    }
 	});
 
 	module.exports = Checker;
-
-	// var that = this;
-
-	// if( items.hasOwnProperty(item) ){
-	//     that.setState({
-	//         item: item,
-	//         message: "Looks like we have that!",
-	//         quantity: "we have " + items[item] + " of those",
-	//         extra: true
-	//     })
-	// }else{
-	//     that.setState({
-	//         item: item,
-	//         message: "Doesn't look like we have any of those",
-	//         quantity: '',
-	//         extra: true
-	//     })
-	// };
-
-
-	// var button = null;
-	// var add = null;
-
-	// if(extra){
-	//             button =    <div>
-	//                             <p>Do you want to add this?</p>
-	//                             <Button add={this.handleAdd}/>
-	//                         </div>
-	//         }else{
-	//             button = <div></div>
-	//         }
-
-	//         if(add){
-	//             add =    <div>
-	//                             <p>hello</p>
-	//                         </div>
-	//         }else{
-	//             add = <div></div>
-	//         }
 
 /***/ },
 /* 225 */
@@ -26091,13 +26121,203 @@
 	"use strict";
 
 /***/ },
-/* 227 */,
+/* 227 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var React = __webpack_require__(1);
+
+	var CheckerMessage = function CheckerMessage(_ref) {
+	    var message = _ref.message;
+
+
+	    return React.createElement(
+	        "div",
+	        null,
+	        React.createElement(
+	            "h3",
+	            null,
+	            message
+	        )
+	    );
+	};
+
+	module.exports = CheckerMessage;
+
+/***/ },
 /* 228 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var React = __webpack_require__(1);
+
+	var CheckerForm = React.createClass({
+	    displayName: "CheckerForm",
+
+	    onFormSubmit: function onFormSubmit(e) {
+	        e.preventDefault();
+
+	        var item = this.refs.item.value;
+
+	        if (item.length > 0) {
+	            this.refs.item.value = '';
+	            this.props.onSearch(item);
+	        }
+
+	        this.props.onSearch(item);
+	    },
+	    render: function render() {
+	        return React.createElement(
+	            "form",
+	            { onSubmit: this.onFormSubmit },
+	            React.createElement("input", { className: "input-field", type: "text", ref: "item" }),
+	            React.createElement(
+	                "button",
+	                null,
+	                "Look up item"
+	            )
+	        );
+	    }
+	});
+
+	module.exports = CheckerForm;
+
+/***/ },
+/* 229 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var React = __webpack_require__(1);
+	var CheckerResultsItem = __webpack_require__(230);
+
+	var CheckerResults = React.createClass({
+	    displayName: "CheckerResults",
+
+	    onSelect: function onSelect(item) {
+	        this.props.handleButton(item);
+	    },
+	    onIncrease: function onIncrease(item) {
+	        this.props.handleIncrease(item);
+	    },
+	    onDecrease: function onDecrease(item) {
+	        this.props.handleDecrease(item);
+	    },
+	    render: function render() {
+	        var _props = this.props,
+	            results = _props.results,
+	            button = _props.button,
+	            heading = _props.heading,
+	            quantity = _props.quantity;
+
+	        var listNodes = results.map(function (listItem) {
+	            return React.createElement(CheckerResultsItem, { object: listItem, item: listItem.name, price: listItem.price, quantity: listItem[quantity], increase: this.onIncrease, decrease: this.onDecrease, selected: this.onSelect, button: button });
+	        }, this);
+	        return React.createElement(
+	            "div",
+	            null,
+	            React.createElement(
+	                "h2",
+	                null,
+	                heading
+	            ),
+	            React.createElement(
+	                "ul",
+	                { className: "list-group" },
+	                listNodes
+	            )
+	        );
+	    }
+	});
+
+	module.exports = CheckerResults;
+
+/***/ },
+/* 230 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var React = __webpack_require__(1);
+	var Button = __webpack_require__(231);
+
+	var CheckerResultsItem = React.createClass({
+		displayName: "CheckerResultsItem",
+
+		handleButton: function handleButton(e) {
+			var object = this.props.object;
+
+			e.preventDefault();
+			this.props.selected(object);
+		},
+		handleIncrease: function handleIncrease(e) {
+			var object = this.props.object;
+
+			e.preventDefault();
+			this.props.increase(object, this.props.quantity); // TODO: Make more DRY
+		},
+		handleDecrease: function handleDecrease(e) {
+			var object = this.props.object;
+
+			e.preventDefault();
+			this.props.decrease(object, this.props.quantity);
+		},
+		render: function render() {
+			var _props = this.props,
+			    item = _props.item,
+			    price = _props.price,
+			    button = _props.button,
+			    quantity = _props.quantity; // TODO: remove buttons for different lists
+
+			return React.createElement(
+				"li",
+				null,
+				item,
+				", \xA3",
+				price,
+				", total: \xA3",
+				price * quantity,
+				React.createElement(Button, { onClick: this.handleButton, text: button }),
+				React.createElement(Button, { onClick: this.handleIncrease, text: "+" }),
+				quantity,
+				React.createElement(Button, { onClick: this.handleDecrease, text: "-" })
+			);
+		}
+	});
+
+	module.exports = CheckerResultsItem;
+
+/***/ },
+/* 231 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	var React = __webpack_require__(1);
+
+	var Button = React.createClass({
+	    displayName: "Button",
+
+	    render: function render() {
+	        return React.createElement(
+	            "button",
+	            { onClick: this.props.onClick },
+	            this.props.text
+	        );
+	    }
+	});
+
+	module.exports = Button;
+
+/***/ },
+/* 232 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var axios = __webpack_require__(229);
+	var axios = __webpack_require__(233);
 
 	var key = 'f736507c07904df89265c07c3620a044';
 
@@ -26141,21 +26361,21 @@
 	};
 
 /***/ },
-/* 229 */
+/* 233 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__(230);
+	module.exports = __webpack_require__(234);
 
 /***/ },
-/* 230 */
+/* 234 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var utils = __webpack_require__(231);
-	var bind = __webpack_require__(232);
-	var Axios = __webpack_require__(233);
-	var defaults = __webpack_require__(234);
+	var utils = __webpack_require__(235);
+	var bind = __webpack_require__(236);
+	var Axios = __webpack_require__(237);
+	var defaults = __webpack_require__(238);
 
 	/**
 	 * Create an instance of Axios
@@ -26188,15 +26408,15 @@
 	};
 
 	// Expose Cancel & CancelToken
-	axios.Cancel = __webpack_require__(251);
-	axios.CancelToken = __webpack_require__(252);
-	axios.isCancel = __webpack_require__(248);
+	axios.Cancel = __webpack_require__(255);
+	axios.CancelToken = __webpack_require__(256);
+	axios.isCancel = __webpack_require__(252);
 
 	// Expose all/spread
 	axios.all = function all(promises) {
 	  return Promise.all(promises);
 	};
-	axios.spread = __webpack_require__(253);
+	axios.spread = __webpack_require__(257);
 
 	module.exports = axios;
 
@@ -26205,12 +26425,12 @@
 
 
 /***/ },
-/* 231 */
+/* 235 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var bind = __webpack_require__(232);
+	var bind = __webpack_require__(236);
 
 	/*global toString:true*/
 
@@ -26510,7 +26730,7 @@
 
 
 /***/ },
-/* 232 */
+/* 236 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -26527,17 +26747,17 @@
 
 
 /***/ },
-/* 233 */
+/* 237 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var defaults = __webpack_require__(234);
-	var utils = __webpack_require__(231);
-	var InterceptorManager = __webpack_require__(245);
-	var dispatchRequest = __webpack_require__(246);
-	var isAbsoluteURL = __webpack_require__(249);
-	var combineURLs = __webpack_require__(250);
+	var defaults = __webpack_require__(238);
+	var utils = __webpack_require__(235);
+	var InterceptorManager = __webpack_require__(249);
+	var dispatchRequest = __webpack_require__(250);
+	var isAbsoluteURL = __webpack_require__(253);
+	var combineURLs = __webpack_require__(254);
 
 	/**
 	 * Create a new instance of Axios
@@ -26618,13 +26838,13 @@
 
 
 /***/ },
-/* 234 */
+/* 238 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
 
-	var utils = __webpack_require__(231);
-	var normalizeHeaderName = __webpack_require__(235);
+	var utils = __webpack_require__(235);
+	var normalizeHeaderName = __webpack_require__(239);
 
 	var PROTECTION_PREFIX = /^\)\]\}',?\n/;
 	var DEFAULT_CONTENT_TYPE = {
@@ -26641,10 +26861,10 @@
 	  var adapter;
 	  if (typeof XMLHttpRequest !== 'undefined') {
 	    // For browsers use XHR adapter
-	    adapter = __webpack_require__(236);
+	    adapter = __webpack_require__(240);
 	  } else if (typeof process !== 'undefined') {
 	    // For node use HTTP adapter
-	    adapter = __webpack_require__(236);
+	    adapter = __webpack_require__(240);
 	  }
 	  return adapter;
 	}
@@ -26718,12 +26938,12 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 235 */
+/* 239 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var utils = __webpack_require__(231);
+	var utils = __webpack_require__(235);
 
 	module.exports = function normalizeHeaderName(headers, normalizedName) {
 	  utils.forEach(headers, function processHeader(value, name) {
@@ -26736,18 +26956,18 @@
 
 
 /***/ },
-/* 236 */
+/* 240 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
 
-	var utils = __webpack_require__(231);
-	var settle = __webpack_require__(237);
-	var buildURL = __webpack_require__(240);
-	var parseHeaders = __webpack_require__(241);
-	var isURLSameOrigin = __webpack_require__(242);
-	var createError = __webpack_require__(238);
-	var btoa = (typeof window !== 'undefined' && window.btoa && window.btoa.bind(window)) || __webpack_require__(243);
+	var utils = __webpack_require__(235);
+	var settle = __webpack_require__(241);
+	var buildURL = __webpack_require__(244);
+	var parseHeaders = __webpack_require__(245);
+	var isURLSameOrigin = __webpack_require__(246);
+	var createError = __webpack_require__(242);
+	var btoa = (typeof window !== 'undefined' && window.btoa && window.btoa.bind(window)) || __webpack_require__(247);
 
 	module.exports = function xhrAdapter(config) {
 	  return new Promise(function dispatchXhrRequest(resolve, reject) {
@@ -26843,7 +27063,7 @@
 	    // This is only done if running in a standard browser environment.
 	    // Specifically not if we're in a web worker, or react-native.
 	    if (utils.isStandardBrowserEnv()) {
-	      var cookies = __webpack_require__(244);
+	      var cookies = __webpack_require__(248);
 
 	      // Add xsrf header
 	      var xsrfValue = (config.withCredentials || isURLSameOrigin(config.url)) && config.xsrfCookieName ?
@@ -26920,12 +27140,12 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 237 */
+/* 241 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var createError = __webpack_require__(238);
+	var createError = __webpack_require__(242);
 
 	/**
 	 * Resolve or reject a Promise based on response status.
@@ -26951,12 +27171,12 @@
 
 
 /***/ },
-/* 238 */
+/* 242 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var enhanceError = __webpack_require__(239);
+	var enhanceError = __webpack_require__(243);
 
 	/**
 	 * Create an Error with the specified message, config, error code, and response.
@@ -26974,7 +27194,7 @@
 
 
 /***/ },
-/* 239 */
+/* 243 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -26999,12 +27219,12 @@
 
 
 /***/ },
-/* 240 */
+/* 244 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var utils = __webpack_require__(231);
+	var utils = __webpack_require__(235);
 
 	function encode(val) {
 	  return encodeURIComponent(val).
@@ -27073,12 +27293,12 @@
 
 
 /***/ },
-/* 241 */
+/* 245 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var utils = __webpack_require__(231);
+	var utils = __webpack_require__(235);
 
 	/**
 	 * Parse headers into an object
@@ -27116,12 +27336,12 @@
 
 
 /***/ },
-/* 242 */
+/* 246 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var utils = __webpack_require__(231);
+	var utils = __webpack_require__(235);
 
 	module.exports = (
 	  utils.isStandardBrowserEnv() ?
@@ -27190,7 +27410,7 @@
 
 
 /***/ },
-/* 243 */
+/* 247 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -27232,12 +27452,12 @@
 
 
 /***/ },
-/* 244 */
+/* 248 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var utils = __webpack_require__(231);
+	var utils = __webpack_require__(235);
 
 	module.exports = (
 	  utils.isStandardBrowserEnv() ?
@@ -27291,12 +27511,12 @@
 
 
 /***/ },
-/* 245 */
+/* 249 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var utils = __webpack_require__(231);
+	var utils = __webpack_require__(235);
 
 	function InterceptorManager() {
 	  this.handlers = [];
@@ -27349,15 +27569,15 @@
 
 
 /***/ },
-/* 246 */
+/* 250 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var utils = __webpack_require__(231);
-	var transformData = __webpack_require__(247);
-	var isCancel = __webpack_require__(248);
-	var defaults = __webpack_require__(234);
+	var utils = __webpack_require__(235);
+	var transformData = __webpack_require__(251);
+	var isCancel = __webpack_require__(252);
+	var defaults = __webpack_require__(238);
 
 	/**
 	 * Throws a `Cancel` if cancellation has been requested.
@@ -27434,12 +27654,12 @@
 
 
 /***/ },
-/* 247 */
+/* 251 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var utils = __webpack_require__(231);
+	var utils = __webpack_require__(235);
 
 	/**
 	 * Transform the data for a request or a response
@@ -27460,7 +27680,7 @@
 
 
 /***/ },
-/* 248 */
+/* 252 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -27471,7 +27691,7 @@
 
 
 /***/ },
-/* 249 */
+/* 253 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -27491,7 +27711,7 @@
 
 
 /***/ },
-/* 250 */
+/* 254 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -27509,7 +27729,7 @@
 
 
 /***/ },
-/* 251 */
+/* 255 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -27534,12 +27754,12 @@
 
 
 /***/ },
-/* 252 */
+/* 256 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var Cancel = __webpack_require__(251);
+	var Cancel = __webpack_require__(255);
 
 	/**
 	 * A `CancelToken` is an object that can be used to request cancellation of an operation.
@@ -27597,7 +27817,7 @@
 
 
 /***/ },
-/* 253 */
+/* 257 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -27628,175 +27848,6 @@
 	  };
 	};
 
-
-/***/ },
-/* 254 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	var React = __webpack_require__(1);
-
-	var CheckerMessage = function CheckerMessage(_ref) {
-	    var message = _ref.message;
-
-
-	    return React.createElement(
-	        "div",
-	        null,
-	        React.createElement(
-	            "h3",
-	            null,
-	            message
-	        )
-	    );
-	};
-
-	module.exports = CheckerMessage;
-
-/***/ },
-/* 255 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	var React = __webpack_require__(1);
-
-	var CheckerForm = React.createClass({
-	    displayName: "CheckerForm",
-
-	    onFormSubmit: function onFormSubmit(e) {
-	        e.preventDefault();
-
-	        var item = this.refs.item.value;
-
-	        if (item.length > 0) {
-	            this.refs.item.value = '';
-	            this.props.onSearch(item);
-	        }
-
-	        this.props.onSearch(item);
-	    },
-	    render: function render() {
-	        return React.createElement(
-	            "form",
-	            { onSubmit: this.onFormSubmit },
-	            React.createElement("input", { className: "input-field", type: "text", ref: "item" }),
-	            React.createElement(
-	                "button",
-	                null,
-	                "Look up item"
-	            )
-	        );
-	    }
-	});
-
-	module.exports = CheckerForm;
-
-/***/ },
-/* 256 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	var React = __webpack_require__(1);
-	var CheckerResultsItem = __webpack_require__(257);
-
-	var CheckerResults = React.createClass({
-	  displayName: "CheckerResults",
-
-	  onSelect: function onSelect(item) {
-	    this.props.handleButton(item);
-	  },
-	  render: function render() {
-	    var _props = this.props,
-	        results = _props.results,
-	        button = _props.button,
-	        heading = _props.heading;
-
-	    var listNodes = results.map(function (listItem) {
-	      return React.createElement(CheckerResultsItem, { object: listItem, item: listItem.name, price: listItem.price, quantity: listItem.quantity, selected: this.onSelect, button: button });
-	    }, this);
-	    return React.createElement(
-	      "div",
-	      null,
-	      React.createElement(
-	        "h2",
-	        null,
-	        heading
-	      ),
-	      React.createElement(
-	        "ul",
-	        { id: "Results", className: "list-group" },
-	        listNodes
-	      )
-	    );
-	  }
-	});
-
-	module.exports = CheckerResults;
-
-/***/ },
-/* 257 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	var React = __webpack_require__(1);
-	var Button = __webpack_require__(258);
-
-	var CheckerResultsItem = React.createClass({
-		displayName: "CheckerResultsItem",
-
-		handleButton: function handleButton(e) {
-			var object = this.props.object;
-
-			e.preventDefault();
-			this.props.selected(object);
-		},
-		render: function render() {
-			var _props = this.props,
-			    item = _props.item,
-			    price = _props.price,
-			    button = _props.button,
-			    quantity = _props.quantity;
-
-			return React.createElement(
-				"li",
-				null,
-				item,
-				" , \xA3",
-				price,
-				", quantity: ",
-				quantity,
-				React.createElement(Button, { onClick: this.handleButton, text: button })
-			);
-		}
-	});
-
-	module.exports = CheckerResultsItem;
-
-/***/ },
-/* 258 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	var React = __webpack_require__(1);
-
-	var Button = React.createClass({
-	    displayName: "Button",
-
-	    render: function render() {
-	        return React.createElement(
-	            "button",
-	            { onClick: this.props.onClick },
-	            this.props.text
-	        );
-	    }
-	});
-
-	module.exports = Button;
 
 /***/ }
 /******/ ]);

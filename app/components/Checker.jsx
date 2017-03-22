@@ -52,7 +52,7 @@ var Checker = React.createClass({
         
         var {data, list} = this.state;
         
-        if( this.containsObject(item, data)){
+        if( this.containsObject(item, data)){ // If there is already item in Fridge
             that.setState({
                 message: "you have one already!"
             })
@@ -62,7 +62,7 @@ var Checker = React.createClass({
             }
     
         
-            if( !this.containsObject(item, list)){
+            if( !this.containsObject(item, list)){ // If there is already item in List
                 list.push(item);
             
                 that.setState({
@@ -161,9 +161,9 @@ var Checker = React.createClass({
             <div>
                 <CheckerMessage message={message}/>
                 <CheckerForm onSearch={this.handleSearch} />
-                <CheckerResults handleButton={this.handleAddList} results={results} quantity="" button="Add this item" heading="Results" />
-                <CheckerResults handleIncrease={this.handleIncrease} handleDecrease={this.handleDecrease} handleButton={this.handleCheckout} results={list} quantity="list" button="Checkout Item" heading="List" />
-                <CheckerResults handleIncrease={this.handleIncrease} handleDecrease={this.handleDecrease} handleButton={this.handleAddList} results={data} quantity="fridge" button="Remove" heading="Fridge" />
+                <CheckerResults hasQuantity={false} hasTotal={false} handleButton={this.handleAddList} results={results} quantity="" button="Add this item" heading="Results" />
+                <CheckerResults hasQuantity={true} hasTotal={true} handleIncrease={this.handleIncrease} handleDecrease={this.handleDecrease} handleButton={this.handleCheckout} results={list} quantity="list" button="Checkout Item" heading="List" />
+                <CheckerResults hasQuantity={false} hasTotal={true} handleIncrease={this.handleIncrease} handleDecrease={this.handleDecrease} handleButton={this.handleAddList} results={data} quantity="fridge" button="Remove" heading="Fridge" />
             </div>
         );
     }

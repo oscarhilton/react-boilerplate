@@ -25514,6 +25514,7 @@
 
 
 	        if (this.containsObject(item, data)) {
+	            // If there is already item in Fridge
 	            that.setState({
 	                message: "you have one already!"
 	            });
@@ -25523,6 +25524,7 @@
 	            }
 
 	            if (!this.containsObject(item, list)) {
+	                // If there is already item in List
 	                list.push(item);
 
 	                that.setState({
@@ -25630,9 +25632,9 @@
 	            null,
 	            React.createElement(CheckerMessage, { message: message }),
 	            React.createElement(CheckerForm, { onSearch: this.handleSearch }),
-	            React.createElement(CheckerResults, { handleButton: this.handleAddList, results: results, quantity: "", button: "Add this item", heading: "Results" }),
-	            React.createElement(CheckerResults, { handleIncrease: this.handleIncrease, handleDecrease: this.handleDecrease, handleButton: this.handleCheckout, results: list, quantity: "list", button: "Checkout Item", heading: "List" }),
-	            React.createElement(CheckerResults, { handleIncrease: this.handleIncrease, handleDecrease: this.handleDecrease, handleButton: this.handleAddList, results: data, quantity: "fridge", button: "Remove", heading: "Fridge" })
+	            React.createElement(CheckerResults, { hasQuantity: false, hasTotal: false, handleButton: this.handleAddList, results: results, quantity: "", button: "Add this item", heading: "Results" }),
+	            React.createElement(CheckerResults, { hasQuantity: true, hasTotal: true, handleIncrease: this.handleIncrease, handleDecrease: this.handleDecrease, handleButton: this.handleCheckout, results: list, quantity: "list", button: "Checkout Item", heading: "List" }),
+	            React.createElement(CheckerResults, { hasQuantity: false, hasTotal: true, handleIncrease: this.handleIncrease, handleDecrease: this.handleDecrease, handleButton: this.handleAddList, results: data, quantity: "fridge", button: "Remove", heading: "Fridge" })
 	        );
 	    }
 	});
@@ -26210,10 +26212,12 @@
 	            results = _props.results,
 	            button = _props.button,
 	            heading = _props.heading,
-	            quantity = _props.quantity;
+	            quantity = _props.quantity,
+	            hasQuantity = _props.hasQuantity,
+	            hasTotal = _props.hasTotal;
 
 	        var listNodes = results.map(function (listItem) {
-	            return React.createElement(CheckerResultsItem, { object: listItem, item: listItem.name, price: listItem.price, quantity: listItem[quantity], increase: this.onIncrease, decrease: this.onDecrease, selected: this.onSelect, button: button });
+	            return React.createElement(CheckerResultsItem, { hasTotal: hasTotal, hasQuantity: hasQuantity, object: listItem, item: listItem.name, price: listItem.price, quantity: listItem[quantity], increase: this.onIncrease, decrease: this.onDecrease, selected: this.onSelect, button: button });
 	        }, this);
 	        return React.createElement(
 	            "div",
@@ -26224,8 +26228,35 @@
 	                heading
 	            ),
 	            React.createElement(
-	                "ul",
-	                { className: "list-group" },
+	                "table",
+	                null,
+	                React.createElement(
+	                    "tr",
+	                    null,
+	                    React.createElement(
+	                        "th",
+	                        null,
+	                        "Product Name"
+	                    ),
+	                    React.createElement(
+	                        "th",
+	                        null,
+	                        "Price each"
+	                    ),
+	                    hasTotal ? React.createElement(
+	                        "th",
+	                        null,
+	                        "To pay"
+	                    ) : '',
+	                    React.createElement("th", null),
+	                    hasQuantity ? React.createElement("th", null) : '',
+	                    React.createElement(
+	                        "th",
+	                        null,
+	                        "Quantity"
+	                    ),
+	                    hasQuantity ? React.createElement("th", null) : ''
+	                ),
 	                listNodes
 	            )
 	        );
@@ -26269,20 +26300,52 @@
 			    item = _props.item,
 			    price = _props.price,
 			    button = _props.button,
-			    quantity = _props.quantity; // TODO: remove buttons for different lists
+			    quantity = _props.quantity,
+			    hasQuantity = _props.hasQuantity,
+			    hasTotal = _props.hasTotal; // TODO: remove buttons for different lists
 
+			var total = (price * quantity).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+			var price = price.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
 			return React.createElement(
-				"li",
-				null,
-				item,
-				", \xA3",
-				price,
-				", total: \xA3",
-				price * quantity,
-				React.createElement(Button, { onClick: this.handleButton, text: button }),
-				React.createElement(Button, { onClick: this.handleIncrease, text: "+" }),
-				quantity,
-				React.createElement(Button, { onClick: this.handleDecrease, text: "-" })
+				"tr",
+				{ className: "Result" },
+				React.createElement(
+					"td",
+					{ className: "Item" },
+					item
+				),
+				React.createElement(
+					"td",
+					{ className: "price" },
+					"\xA3",
+					price
+				),
+				hasTotal ? React.createElement(
+					"td",
+					null,
+					"\xA3",
+					total
+				) : React.createElement("td", null),
+				React.createElement(
+					"td",
+					{ className: "action" },
+					React.createElement(Button, { onClick: this.handleButton, text: button })
+				),
+				hasQuantity ? React.createElement(
+					"td",
+					{ className: "quantity-button" },
+					React.createElement(Button, { onClick: this.handleIncrease, text: "+" })
+				) : React.createElement("td", null),
+				React.createElement(
+					"td",
+					{ className: "quantity" },
+					quantity
+				),
+				hasQuantity ? React.createElement(
+					"td",
+					{ className: "quantity-button" },
+					React.createElement(Button, { onClick: this.handleDecrease, text: "-" })
+				) : React.createElement("td", null)
 			);
 		}
 	});
@@ -26322,7 +26385,7 @@
 	var key = 'f736507c07904df89265c07c3620a044';
 
 	var TESCO_API_URL = 'https://dev.tescolabs.com/grocery/products/?';
-	var TESCO_BARCODE = 'https://dev.tescolabs.com/product/?gtin=';
+	var TESCO_BARCODE = 'https://dev.tescolabs.com/product/';
 
 	module.exports = {
 
@@ -26344,16 +26407,13 @@
 	            throw new Error(res.data.message);
 	        });
 	    },
-	    scanProduct: function scanProduct(barcode) {
-	        var requestUrl = TESCO_BARCODE + barcode;
+	    scanProduct: function scanProduct(barcode, type) {
+	        var requestUrl = TESCO_BARCODE + '?' + type + '=' + barcode;
 
 	        return axios.get(requestUrl, {
 	            headers: { "Ocp-Apim-Subscription-Key": key }
 	        }).then(function (res) {
-	            console.log(res);
-
-	            var newDiv = document.createElement("div");
-	            newDiv.write(res);
+	            return res.data.products[0];
 	        }, function (res) {
 	            throw new Error(res.data.message);
 	        });

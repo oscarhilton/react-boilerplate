@@ -12,18 +12,27 @@ var CheckerResults = React.createClass({
         this.props.handleDecrease(item);
     },
     render: function(){
-    var {results, button, heading, quantity} = this.props;    
+    var {results, button, heading, quantity, hasQuantity, hasTotal} = this.props;    
     var listNodes = results.map(function (listItem) {
 			return (
-				<CheckerResultsItem object={listItem} item={listItem.name} price={listItem.price} quantity={ listItem[quantity] } increase={this.onIncrease} decrease={this.onDecrease} selected={this.onSelect} button={button} />
+				<CheckerResultsItem hasTotal={hasTotal} hasQuantity={hasQuantity} object={listItem} item={listItem.name} price={listItem.price} quantity={ listItem[quantity] } increase={this.onIncrease} decrease={this.onDecrease} selected={this.onSelect} button={button} />
 			);
 		},this);
 		return (
 		    <div>
 		        <h2>{heading}</h2>
-    			<ul className="list-group">
-    				{listNodes}
-    			</ul>
+    			<table>
+                  <tr>
+                    <th>Product Name</th>
+                    <th>Price each</th> 
+                    {hasTotal ? (<th>To pay</th>) : ''}
+                    <th></th>
+                    {hasQuantity ? (<th></th>) : ''}
+                    <th>Quantity</th>
+                    {hasQuantity ? <th></th> : ''}
+                  </tr>
+                  {listNodes}
+                </table>
 			</div>
 		);
     }

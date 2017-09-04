@@ -7,7 +7,6 @@ var CheckerForm = React.createClass({
         var item = this.refs.item.value;
         
         if (item.length > 0){
-            this.refs.item.value = '';
             this.props.onSearch(item);
         }
         
@@ -15,10 +14,7 @@ var CheckerForm = React.createClass({
     },
     render: function () {
        return (
-            <form onSubmit={this.onFormSubmit}>
-                <input className="input-field" type="text" ref="item" />
-                <button>Look up item</button>
-            </form>
+                <input className="input-field" type="text" ref="item" onChange={this.onFormSubmit} />
     );
    } 
 });
